@@ -42,4 +42,11 @@ public class Post {
     @JoinColumn(name = "usuario_id")
     private Usuario usuario;
 
+    @Column(name = "audio", length = 500000)
+    @Lob
+    private byte[] audio;
+
+    @Transient
+    private String audioUrl;
+
 }

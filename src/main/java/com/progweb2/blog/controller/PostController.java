@@ -1,11 +1,16 @@
 package com.progweb2.blog.controller;
 
+import com.mashape.unirest.request.HttpRequestWithBody;
+import com.mashape.unirest.request.body.Body;
 import com.progweb2.blog.model.Post;
 import com.progweb2.blog.model.Usuario;
 import com.progweb2.blog.service.PostService;
 import com.progweb2.blog.service.UsuarioService;
 import com.progweb2.blog.service.exceptions.RegraDeNegocioException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
