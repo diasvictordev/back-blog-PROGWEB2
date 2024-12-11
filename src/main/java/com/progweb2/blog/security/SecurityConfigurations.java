@@ -40,6 +40,7 @@ public class SecurityConfigurations {
                         .requestMatchers(HttpMethod.GET, "/api/usuario/{id}").permitAll()
                         .requestMatchers(HttpMethod.DELETE, "/api/usuario/{id}").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/post").permitAll()
+                        .requestMatchers(HttpMethod.POST, "/api/post/ortografia").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/post").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/post/{id}").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/post/usuario/{id}").permitAll()

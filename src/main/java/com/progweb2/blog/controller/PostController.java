@@ -48,6 +48,11 @@ public class PostController {
         return ResponseEntity.ok().body(postagem);
     }
 
+    @PostMapping("/ortografia")
+    public ResponseEntity<?> corrigirOrtografia(@RequestBody String post){
+        return ResponseEntity.ok(postService.corrigirTexto(post));
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deletar(@PathVariable Long id){
         postService.deletePost(id);

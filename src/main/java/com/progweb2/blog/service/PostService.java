@@ -4,13 +4,18 @@ import com.mashape.unirest.http.HttpResponse;
 import com.mashape.unirest.http.Unirest;
 import com.progweb2.blog.model.Post;
 import com.progweb2.blog.model.Usuario;
+import com.progweb2.blog.model.dto.ChatGPTRequest;
+import com.progweb2.blog.model.dto.ChatGPTResponse;
 import com.progweb2.blog.repository.PostRepository;
 import com.progweb2.blog.repository.UsuarioRepository;
 import com.progweb2.blog.service.exceptions.RegraDeNegocioException;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientResponseException;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
@@ -27,6 +32,15 @@ public class PostService {
 
     @Autowired
     private PostRepository postRepository;
+
+    @Value("${openai.model}")
+    private String model;
+
+    @Value(("${openai.api.url}"))
+    private String apiURL;
+
+    @Autowired
+    private RestTemplate template;
 
     public Post postar(Long id, Post post){
         Usuario usuario =  usuarioRepository.findById(id).orElseThrow(
@@ -58,19 +72,34 @@ public class PostService {
         if (!posts.isEmpty()) {
             for (Post post : posts) {
                 if (post.getAudio() != null) {
-                    // Supondo que o áudio esteja armazenado como um byte array
+
                     byte[] audioData = post.getAudio();
 
-                    // Você pode converter o áudio para um Base64 string, por exemplo
                     String audioBase64 = Base64.getEncoder().encodeToString(audioData);
-
-                    // Define a URL de áudio para ser utilizada no front-end
                     post.setAudioUrl("data:audio/wav;base64," + audioBase64);
                 }
             }
         }
 
         return posts;
+    }
+
+    public String corrigirTexto(String texto) {
+        String prompt = ("Corrija apenas a ortografia e responda apenas com o texto corrigido, seguinte texto: " + texto);
+        ChatGPTRequest request = new ChatGPTRequest(model, prompt);
+        System.out.println(texto);
+        try {
+            ChatGPTResponse chatGptResponse = template.postForObject(apiURL, request, ChatGPTResponse.class);
+            String response = chatGptResponse.getChoices().get(0).getMessage().getContent();
+            response = response.replaceAll("\\\\n", " ");
+            return response;
+        } catch (RestClientResponseException e) {
+            if (e.getRawStatusCode() == 428) { // Handle 428 specifically if caught as a RestClientResponseException
+                throw new IllegalStateException("Sem créditos no ChatGPT", e);
+            } else {
+                throw new RuntimeException("API request failed with status code " + e.getRawStatusCode(), e);
+            }
+        }
     }
 
     public List<Post> getPostByUsuario(Long id){
@@ -87,7 +116,7 @@ public class PostService {
     }
 
     private static final String API_URL = "https://api.elevenlabs.io/v1/text-to-speech/nPczCjzI2devNBz1zQrb/stream";
-    private static final String XI_API_KEY = "8845a1d33977e23cec2b164b1f5f03e4";
+    private static final String XI_API_KEY = "";
 
     public byte[] gerarAudio(String texto) {
         try {
